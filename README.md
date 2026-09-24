@@ -93,6 +93,15 @@ Interactive docs are at `/docs`.
 | `BEST_DEAL_PASSWORD` | unset | Require HTTP Basic auth (any username) |
 | `LITESTREAM_REPLICA_URL` | unset | Container only: replicate the DB, e.g. `gcs://bucket/best_deal.db` |
 
+## Deploy to Railway (easiest, works from a phone)
+
+1. Sign in at [railway.com](https://railway.com) with GitHub, then **New Project → Deploy from GitHub repo** and pick this repo. It builds the `Dockerfile` (see `railway.json`). In the service's **Settings → Source**, choose the branch to deploy.
+2. Add a volume to the service with mount path **`/data`**. This is where the price history lives, and it survives redeploys.
+3. Under **Variables**, add `BEST_DEAL_PASSWORD` (the login password; any username works).
+4. Under **Settings → Networking**, click **Generate Domain** and open the URL.
+
+Every push to the chosen branch redeploys automatically. Any Docker host with a persistent disk mounted at `/data` works the same way (e.g. Render with a disk).
+
 ## Deploy to Google Cloud Run
 
 ```bash

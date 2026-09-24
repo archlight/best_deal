@@ -16,6 +16,6 @@ RUN chmod +x /entrypoint.sh && useradd --create-home app && mkdir -p /data && ch
 ENV BEST_DEAL_DB=/data/best_deal.db \
     PYTHONUNBUFFERED=1 \
     PORT=8080
-USER app
+# Runs as root only long enough for the entrypoint to fix /data ownership, then drops to "app".
 EXPOSE 8080
 ENTRYPOINT ["/entrypoint.sh"]
