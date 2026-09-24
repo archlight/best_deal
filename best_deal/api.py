@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import base64
 import csv
 import io
+import secrets
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.responses import FileResponse, PlainTextResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -40,10 +42,32 @@ class ObservationRequest(BaseModel):
     seats: int | None = Field(None, ge=1, le=13)
 
 
-def create_app(store: Store | None = None) -> FastAPI:
+def _authorized(header: str | None, password: str) -> bool:
+    if not header or not header.startswith("Basic "):
+        return False
+    try:
+        _, _, supplied = base64.b64decode(header[6:]).decode().partition(":")
+    except (ValueError, UnicodeDecodeError):
+        return False
+    return secrets.compare_digest(supplied.encode(), password.encode())
+
+
+def create_app(store: Store | None = None, password: str | None = None) -> FastAPI:
     store = store or Store(config.DB_PATH)
+    password = password if password is not None else config.PASSWORD
     app = FastAPI(title="Best Deal", description="Compare Grab, Gojek and ComfortDelGro fares.")
     app.state.store = store
+
+    if password:
+        @app.middleware("http")
+        async def basic_auth(request: Request, call_next):
+            if request.url.path == "/healthz" or _authorized(request.headers.get("authorization"), password):
+                return await call_next(request)
+            return Response(status_code=401, headers={"WWW-Authenticate": 'Basic realm="best-deal"'})
+
+    @app.get("/healthz", include_in_schema=False)
+    def healthz():
+        return PlainTextResponse("ok")
 
     @app.get("/api/places")
     def list_places(q: str = "", limit: int = Query(8, ge=1, le=50)):

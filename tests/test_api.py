@@ -40,3 +40,13 @@ def test_timeline_places_and_ui(store):
     assert c.get("/api/places?q=chan").json()[0]["name"].startswith("Changi")
     assert "best<b>deal</b>" in c.get("/").text
     assert c.get("/static/app.js").status_code == 200
+
+
+def test_password_protects_everything_but_health(store):
+    c = TestClient(create_app(store, password="s3cret"))
+    assert c.get("/healthz").status_code == 200
+    denied = c.get("/api/providers")
+    assert denied.status_code == 401 and "Basic" in denied.headers["www-authenticate"]
+    assert c.get("/api/providers", auth=("me", "wrong")).status_code == 401
+    assert c.get("/api/providers", auth=("me", "s3cret")).status_code == 200
+    assert c.get("/", auth=("anyone", "s3cret")).status_code == 200

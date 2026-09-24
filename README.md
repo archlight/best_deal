@@ -90,6 +90,36 @@ Interactive docs are at `/docs`.
 | `BEST_DEAL_TZ` | `Asia/Singapore` | Local time for peak and surcharge rules |
 | `BEST_DEAL_GEOCODER` | `none` | `nominatim` to enable OpenStreetMap lookups |
 | `BEST_DEAL_CALIBRATION_MIN` | `3` | Observations needed before calibrating a product |
+| `BEST_DEAL_PASSWORD` | unset | Require HTTP Basic auth (any username) |
+| `LITESTREAM_REPLICA_URL` | unset | Container only: replicate the DB, e.g. `gcs://bucket/best_deal.db` |
+
+## Deploy to Google Cloud Run
+
+```bash
+gcloud auth login
+gcloud config set project YOUR_PROJECT_ID
+BEST_DEAL_PASSWORD='choose-a-password' ./deploy/cloudrun.sh
+```
+
+The script (safe to re-run) enables the needed APIs and creates:
+
+- a Cloud Storage bucket `<project>-best-deal-data` for the price history
+- a service account with access to that bucket only
+- a Secret Manager secret for the password
+- a Cloud Run service `best-deal` in `asia-southeast1`, built from the `Dockerfile` via Cloud Build
+
+Then it prints the URL. Override `REGION`, `SERVICE` or `BUCKET` with environment variables.
+
+**How the history survives:** Cloud Run disks are wiped whenever an instance stops. [Litestream](https://litestream.io) restores `best_deal.db` from the bucket at startup and streams every change back within about a second. The service runs with `--max-instances 1` because SQLite needs a single writer. It scales to zero when idle, so expect a cold start of a few seconds.
+
+**Access:** with `BEST_DEAL_PASSWORD` set, the browser asks for a login (any username, that password). `/healthz` stays open. Without a password, anyone with the URL can search and add to your history.
+
+Run the same container locally:
+
+```bash
+docker build -t best-deal .
+docker run -p 8080:8080 -v "$PWD/data:/data" best-deal
+```
 
 ## Development
 

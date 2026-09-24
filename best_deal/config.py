@@ -11,3 +11,5 @@ CURRENCY = os.environ.get("BEST_DEAL_CURRENCY", "SGD")
 GEOCODER = os.environ.get("BEST_DEAL_GEOCODER", "none").lower()
 # Minimum observed prices per product before estimates are calibrated to them.
 CALIBRATION_MIN_SAMPLES = int(os.environ.get("BEST_DEAL_CALIBRATION_MIN", "3"))
+# When set, every request except /healthz needs HTTP Basic auth with this password.
+PASSWORD = os.environ.get("BEST_DEAL_PASSWORD") or None
