@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Best Deal · Ride Compare</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <nav class="top">
+        <span class="brand">best<b>deal</b></span>
+        <div class="tabs" role="tablist">
+          <button role="tab" class="tab active" data-view="search" aria-selected="true">Compare</button>
+          <button role="tab" class="tab" data-view="history" aria-selected="false">History</button>
+          <button role="tab" class="tab" data-view="insights" aria-selected="false">Insights</button>
+        </div>
+      </nav>
+      <h1>Find the cheapest ride across Grab, Gojek and ComfortDelGro</h1>
+      <form id="search-form" class="search-box" autocomplete="off">
+        <label class="field">
+          <span>From</span>
+          <input name="origin" list="places" placeholder="Place or lat,lng" required value="Changi Airport T3">
+        </label>
+        <button type="button" class="swap" id="swap" title="Swap from and to" aria-label="Swap from and to">⇄</button>
+        <label class="field">
+          <span>To</span>
+          <input name="destination" list="places" placeholder="Place or lat,lng" required value="Marina Bay Sands">
+        </label>
+        <label class="field when">
+          <span>Leaving</span>
+          <input name="when" type="datetime-local" aria-describedby="when-hint">
+        </label>
+        <button class="go" type="submit">Search</button>
+        <datalist id="places"></datalist>
+      </form>
+      <p id="when-hint" class="hint">Leave "Leaving" empty for now. Every search is saved so you can spot price patterns later.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="view-search" class="view">
+      <div id="search-empty" class="empty">
+        <p>Enter a route to compare fares. Prices are estimated from each provider's fare structure and demand patterns.
+          When you check a real price in an app, record it with <b>Record actual</b>. That trains the estimates and the insights.</p>
+      </div>
+      <div id="search-results" hidden>
+        <div class="trip-summary" id="trip-summary"></div>
+        <div class="layout">
+          <aside class="filters">
+            <h3>Providers</h3>
+            <div id="provider-filters"></div>
+            <h3>Seats</h3>
+            <label><input type="radio" name="seats" value="all" checked> Any</label>
+            <label><input type="radio" name="seats" value="4"> Up to 4</label>
+            <label><input type="radio" name="seats" value="6"> 6 seats</label>
+          </aside>
+          <div class="results">
+            <div class="sort-tabs" id="sort-tabs"></div>
+            <div id="quote-list"></div>
+            <section class="panel">
+              <h2>Cheapest time to go</h2>
+              <p class="muted small">Estimated cheapest standard fare per provider for the next 12 hours. Not saved to history.</p>
+              <div id="timeline-callout" class="callout"></div>
+              <div id="timeline-chart" class="chart"></div>
+            </section>
+            <section class="panel" id="route-history-panel" hidden>
+              <h2>Your history on this route</h2>
+              <div id="route-history"></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-history" class="view" hidden>
+      <div class="panel">
+        <h2>Recent searches</h2>
+        <div id="history-table"></div>
+      </div>
+    </section>
+
+    <section id="view-insights" class="view" hidden>
+      <div class="insight-controls">
+        <label>Data source
+          <select id="insight-source">
+            <option value="all">All (observed overrides estimates)</option>
+            <option value="observed">Observed prices only</option>
+            <option value="estimate">Estimates only</option>
+          </select>
+        </label>
+        <a class="button-link" href="/api/export.csv">Export CSV</a>
+      </div>
+      <div id="stat-tiles" class="tiles"></div>
+      <section class="panel">
+        <h2>What the data says</h2>
+        <ul id="findings" class="findings"></ul>
+      </section>
+      <div class="grid-2">
+        <section class="panel">
+          <h2>Who's cheapest</h2>
+          <p class="muted small">Share of searches where each provider had the lowest standard fare.</p>
+          <div id="wins-chart" class="chart"></div>
+        </section>
+        <section class="panel">
+          <h2>Price per km by hour</h2>
+          <p class="muted small">Average of each provider's cheapest standard fare, divided by trip distance.</p>
+          <div id="hourly-chart" class="chart"></div>
+        </section>
+      </div>
+      <section class="panel">
+        <h2>When rides are cheapest</h2>
+        <p class="muted small">Lowest fare available per km, by day and hour of travel. Darker is more expensive.</p>
+        <div id="heatmap" class="chart"></div>
+      </section>
+      <section class="panel">
+        <h2>Your routes</h2>
+        <div id="routes-table"></div>
+      </section>
+      <section class="panel">
+        <h2>Estimate accuracy</h2>
+        <p class="muted small">Observed ÷ estimated price for each product. After enough samples, estimates are scaled by the median ratio automatically.</p>
+        <div id="calibration-table"></div>
+      </section>
+    </section>
+  </main>
+
+  <div id="tooltip" class="tooltip" role="status" hidden></div>
+  <script src="/static/charts.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

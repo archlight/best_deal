@@ -1,0 +1,18 @@
+[project]
+name = "best-deal"
+version = "0.1.0"
+description = "Compare ride-hailing prices across Grab, Gojek and ComfortDelGro (Zig) and learn price patterns over time."
+requires-python = ">=3.10"
+dependencies = ["fastapi>=0.110", "uvicorn>=0.27"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[tool.setuptools.packages.find]
+include = ["best_deal*"]
+
+[tool.setuptools.package-data]
+best_deal = ["static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
